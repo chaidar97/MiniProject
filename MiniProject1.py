@@ -1,5 +1,6 @@
 import sqlite3
 import getpass
+import time
 
 def main():
     loginEmail = ""
@@ -15,29 +16,48 @@ def login(c, conn):
     while True:
         if(answer.lower() == 'l'):
             # Gather user input for email and password
-            username = input("Email:")
-            pswd = getpass.getpass('Password:')
+            email = input("Email: ")
+            pswd = getpass.getpass('Password: ')
             loginQuery = 'SELECT Members.name from members WHERE members.email = ? AND members.pwd = ?;'
             # Query the database on login info
-            loginInfo = (username, pswd)
-            c.execute(loginQuery, loginInfo)
-            conn.commit()
-            info = c.fetchall()
+            loginInfo = (email, pswd)
+            info = runSQL(c, conn, loginQuery, loginInfo)
             # If we get nothing returned, make user re-enter
             if(len(info) == 0):
                 print("Invalid login")
             # Otherwise we allow the login and store the login email
             else:
-                loginEmail = username
                 print("Welcome, Master.")
                 break
         # If user wants to register
         elif(answer.lower() == 'r'):
-            print("Registered.")
-            break
+            userQuery = 'SELECT Members.name from members WHERE members.email = ?;'
+            # Get registration info
+            email = input("Registration email: ")
+            # Check if the email already exists
+            result = runSQL(c, conn, userQuery, (email,))
+            if(len(result) != 0):
+                print("This username already exists, sorry.")
+            # Insert new user into the database
+            else:
+                name = input("Name: ")
+                phone = input("Phone: ")
+                pswd = getpass.getpass('Password: ')
+                regInfo = (email, name, phone, pswd)
+                registerQuery = 'INSERT INTO members(email, name, phone, pwd) VALUES(?,?,?,?);'
+                runSQL(c, conn, registerQuery, regInfo)
+                print("Registered and logged in.")
+                break
         else:
             print("Invalid response.")
             answer = input("Do you wish to login or register (L/R)? ")
-    return username
+    return email
+
+def runSQL(c, conn, query, input):
+    # Query the database on login info
+    c.execute(query, input)
+    info = c.fetchall()
+    conn.commit()
+    return info
 
 main()
