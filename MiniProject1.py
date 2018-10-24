@@ -5,12 +5,11 @@ def main():
     loginEmail = ""
     conn = sqlite3.connect('./testdb.db')
     c = conn.cursor()
-    login(c, conn)
-
+    loginEmail = login(c, conn)
     conn.close()
 
+# Find out if user wishes to login or register
 def login(c, conn):
-    # Find out if user wishes to login or register
     answer = input("Do you wish to login or register (L/R)? ")
     # Login loop
     while True:
@@ -32,12 +31,13 @@ def login(c, conn):
                 loginEmail = username
                 print("Welcome, Master.")
                 break
+        # If user wants to register
         elif(answer.lower() == 'r'):
             print("Registered.")
             break
         else:
             print("Invalid response.")
             answer = input("Do you wish to login or register (L/R)? ")
-
+    return username
 
 main()
