@@ -3,9 +3,14 @@ import getpass
 import datetime
 import time
 
+# Looks like we have to do a design doc and a readme also. We can do it at the end.
+
+LUGGAGE_MAX_LEN = 10 
+
 def main():
     loginEmail = ""
-    conn = sqlite3.connect('./testdb.db')
+    conn = sqlite3.connect("testdb.db") 
+    # conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
     c = conn.cursor()
     loginEmail = login(c, conn)
     displayMessages(c,conn,loginEmail)
@@ -13,7 +18,7 @@ def main():
     while True:
         answer = input("What would you like to do? Type 'O' for options: ")
         if(answer.lower() == "o"):
-            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\n")
+            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride.")
         elif(answer.lower() == "exit"):
             print("Goodbye.")
             break
@@ -21,6 +26,10 @@ def main():
             searchRideRequests(c, conn, loginEmail)
         elif (answer.lower() == "pcode"):
             searchLocations(c, conn, loginEmail)
+        elif (answer.lower() == "offer"):
+            offerRide(c, conn, loginEmail)
+        elif (answer.lower() == "search"):
+            searchRides(c, conn, loginEmail)
 
     conn.close()
 
@@ -181,5 +190,84 @@ def displayMessages(c, conn, email):
         # Update DB to set messages as seen
         query = "UPDATE inbox SET seen = ? WHERE email = ?;"
         runSQL(c, conn, query, values)
+
+
+# Offer a ride
+def offerRide(c, conn, loginEmail):
+
+    # Get day month and year from user
+    while True:
+        date = input("Enter ride date (MM-DD-YYYY), or 'stop' to exit: ")
+        if(date == "stop"):
+            return
+        try:
+            year, month, day = map(int, date.split('-'))
+            break
+        except:
+            print("Please enter a valid date")
+
+    # Get the number of seats offered
+    while True:
+        seatInput = input("Enter the number of seats offered, or 'stop' to exit: ")
+        if(seatInput == "stop"):
+            return
+        try:
+            seats = int(seatInput)
+            break
+        except:
+            print("Please enter a valid number of seats")
+
+    # Get the price per seat
+    while True:
+        priceInput = input("Enter the price per seat, or 'stop' to exit: ")
+        if(seatInput == "stop"):
+            return
+        try:
+            seats = float(seatInput)
+            break
+        except:
+            print("Please enter a valid price per seat")
+
+    # Get the luggage description
+    while True:
+        lugDesc = input("Enter a luggage description (Max Length: " + LUGGAGE_MAX_LEN + "): ")
+        if(len(lugDesc) > LUGGAGE_MAX_LEN):
+            print("Please enter a valid luggage description")
+        else:
+            break
+
+     # TODO: Get source and destination location
+
+    val = input("If you wish to add a car number, enter 'y', otherwise, enter anything else: ")
+    if(val == 'y'):
+        while True:
+            cno = input("Enter your car number: ")
+            try:
+                cno = int(cno)
+                # TODO: Ensure that the cno is valid
+                break
+            except:
+                print("Please enter a valid car number.")
+
+    val = input("If you wish to add enroute locations, enter 'y', otherwise, enter anything else: ")
+    enroute = []
+    if(val == 'y'):
+        pass # TODO: While the user doesnt say no, keep asking for keywords, getting the location, and adding it in an enroute array
+
+
+# Return a location number from a provided keyword
+def locFromKeyword(keyword):
+    pass
+
+# Ask the user for a location repeatedly
+def pollForLocation():
+    pass
+    #while True:
+    #    key = input("Enter a location keyword: ")
+
+# Search for a ride
+def searchRides(c, conn, loginEmail):
+    pass
+
 
 main()
