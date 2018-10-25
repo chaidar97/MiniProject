@@ -7,6 +7,10 @@ def main():
     conn = sqlite3.connect('./testdb.db')
     c = conn.cursor()
     loginEmail = login(c, conn)
+    displayMessages(c,conn,loginEmail)
+    # Main while loop
+    #while True():
+
     conn.close()
 
 # Find out if user wishes to login or register
@@ -27,7 +31,7 @@ def login(c, conn):
                 print("Invalid login")
             # Otherwise we allow the login and store the login email
             else:
-                print("Welcome, Master.")
+                print("Welcome, %s.\n"%email)
                 break
         # If user wants to register
         elif(answer.lower() == 'r'):
@@ -59,5 +63,19 @@ def runSQL(c, conn, query, input):
     info = c.fetchall()
     conn.commit()
     return info
+
+def displayMessages(c, conn, email):
+    query = 'SELECT inbox.sender, inbox.content, inbox.msgTimestamp FROM inbox, members WHERE members.email = ? AND inbox.email = members.email AND inbox.seen = ?'
+    values = (email, "n")
+    messages = runSQL(c, conn, query, values)
+    if(len(messages) == 0):
+        print("No new messages!")
+    else:
+        for v in messages:
+            message = "From %s: %s\t\t%s\n" % (v[0], v[1], v[2])
+            print(message)
+        values = ("y", email)
+        query = "UPDATE inbox SET seen = ? WHERE email = ?;"
+        runSQL(c, conn, query, values)
 
 main()
