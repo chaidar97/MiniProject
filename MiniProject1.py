@@ -12,52 +12,90 @@ def main():
     while True:
         answer = input("What would you like to do? Type 'O' for options: ")
         if(answer.lower() == "o"):
-            print("Type 'SMR' to see your rides\nType 'Exit' to quit.\n")
+            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\n")
         elif(answer.lower() == "exit"):
             print("Goodbye.")
             break
         elif(answer.lower() == "smr"):
             searchRideRequests(c, conn, loginEmail)
+        elif (answer.lower() == "pcode"):
+            searchLocations(c, conn)
 
     conn.close()
 
+# Use this function to query the database, just give it a query and the input for the query
+def runSQL(c, conn, query, input):
+    # Query the database on login info
+    c.execute(query, input)
+    info = c.fetchall()
+    conn.commit()
+    return info
 
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
     query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate" \
             " FROM requests, members WHERE members.email = ? AND requests.email = members.email "
     rides = runSQL(c, conn, query, (loginEmail,))
-    index = 0
-    limit = 5
     if(len(rides) == 0):
         print("You have no ride requests")
     else:
         print("Here are your ride requests:\n")
-        # See up to 5 ride requests at a time
-        for ride in rides:
-            # Checks to see if the user wants to see 5 more requests
-            if(index == limit):
-                response = input("If you wish to see 5 more rides, enter 'y', otherwise, enter anything else: ")
-                if(response.lower() == 'y'):
-                    limit += 5
-                else:
-                    break
-            print("Ride ID: %s    Pickup: %s    Dropoff: %s    Price: %s    Date: %s"%(ride[0], ride[1], ride[2], ride[3], ride[4]))
-            index +=1
+        # Print out queried rides
+        printRequests(rides)
         # Allows the user to delete any ride request given
         while True:
             answer = input("If you wish to delete a request, simply enter the ride ID. If you wish to go back, enter anything else: ")
             if(answer.isdigit()):
+                # Looks through rides to see if the value entered matches a ride id
                 for ride in rides:
                     if(int(answer) == int(ride[0])):
                         query = "DELETE FROM requests WHERE rid = ?;"
                         runSQL(c,conn,query,(answer,))
-                        print("Ride request #%s Deleted."%answer)
+                        print("Ride request #%s Deleted.\n"%answer)
             else:
                 break
 
 
+def searchLocations(c, conn):
+    location = input("Would you like to search a location reference or a city (L/C)? ")
+    if(location.lower() == "l"):
+        location = input("Please enter the location code: ")
+        query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate " \
+                "FROM requests WHERE requests.pickup = ?;"
+        info = runSQL(c, conn, query, (location.lower(),))
+        if(len(info) == 0):
+            print("No results found.")
+        # Print out queried rides
+        printRequests(info)
+    elif(location.lower() == "c"):
+        location = input("Please enter the city: ")
+        query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate FROM requests " \
+                "INNER JOIN locations ON (requests.pickup = locations.lcode) WHERE lower(locations.city) = ?;"
+        info = runSQL(c, conn, query, (location.lower(),))
+        if(len(info) == 0):
+            print("No results found.")
+        # Print out queried rides
+        printRequests(info)
+    else:
+        print("Invalid input.\n")
 
+# Prints out the ride requests 5 at a time
+def printRequests(rides):
+    index = 0
+    limit = 5
+    # See up to 5 ride requests at a time
+    for ride in rides:
+        # Checks to see if the user wants to see 5 more requests
+        if (index == limit):
+            response = input("\nIf you wish to see 5 more rides, enter 'y', otherwise, enter anything else: \n")
+            if (response.lower() == 'y'):
+                limit += 5
+            else:
+                break
+        print("Ride ID: %s    Pickup: %s    Dropoff: %s    Price: %s    Date: %s" % (
+        ride[0], ride[1], ride[2], ride[3], ride[4]))
+        index += 1
+    print("\n")
 
 # Find out if user wishes to login or register
 def login(c, conn):
@@ -102,13 +140,6 @@ def login(c, conn):
             print("Invalid response.")
             answer = input("Do you wish to login or register (L/R)? ")
     return email
-
-def runSQL(c, conn, query, input):
-    # Query the database on login info
-    c.execute(query, input)
-    info = c.fetchall()
-    conn.commit()
-    return info
 
 # Displays all the messages that are unseen for that user
 def displayMessages(c, conn, email):
