@@ -1,5 +1,6 @@
 import sqlite3
 import getpass
+import datetime
 import time
 
 def main():
@@ -19,9 +20,10 @@ def main():
         elif(answer.lower() == "smr"):
             searchRideRequests(c, conn, loginEmail)
         elif (answer.lower() == "pcode"):
-            searchLocations(c, conn)
+            searchLocations(c, conn, loginEmail)
 
     conn.close()
+
 
 # Use this function to query the database, just give it a query and the input for the query
 def runSQL(c, conn, query, input):
@@ -31,9 +33,10 @@ def runSQL(c, conn, query, input):
     conn.commit()
     return info
 
+
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
-    query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate" \
+    query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate" \
             " FROM requests, members WHERE members.email = ? AND requests.email = members.email "
     rides = runSQL(c, conn, query, (loginEmail,))
     if(len(rides) == 0):
@@ -56,20 +59,23 @@ def searchRideRequests(c, conn, loginEmail):
                 break
 
 
-def searchLocations(c, conn):
+def searchLocations(c, conn, loginEmail):
     location = input("Would you like to search a location reference or a city (L/C)? ")
+    valid = True
     if(location.lower() == "l"):
         location = input("Please enter the location code: ")
-        query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate " \
+        query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate " \
                 "FROM requests WHERE requests.pickup = ?;"
         info = runSQL(c, conn, query, (location.lower(),))
+        print("MADE IT2")
+
         if(len(info) == 0):
             print("No results found.")
         # Print out queried rides
         printRequests(info)
     elif(location.lower() == "c"):
         location = input("Please enter the city: ")
-        query = "SELECT requests.rid, requests.pickup, requests.dropoff, requests.amount, requests.rdate FROM requests " \
+        query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate FROM requests " \
                 "INNER JOIN locations ON (requests.pickup = locations.lcode) WHERE lower(locations.city) = ?;"
         info = runSQL(c, conn, query, (location.lower(),))
         if(len(info) == 0):
@@ -77,7 +83,23 @@ def searchLocations(c, conn):
         # Print out queried rides
         printRequests(info)
     else:
+        valid = False
         print("Invalid input.\n")
+    if(valid):
+        # Ask the user if they wish to message requester
+        answer = input("If you would like to message a user providing the ride, enter the Ride ID, otherwise enter anything else: ")
+        if (answer.isdigit()):
+            # Looks through rides to see if the value entered matches a ride id
+            for ride in info:
+                if (int(answer) == int(ride[0])):
+                    # Gather information for new message
+                    message = input("Enter the message you wish to send: ")
+                    t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                    values = (ride[1], t, loginEmail, message, answer, "n" )
+                    query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
+                    runSQL(c, conn, query, values)
+                    print("Message sent!\n")
+
 
 # Prints out the ride requests 5 at a time
 def printRequests(rides):
@@ -92,10 +114,10 @@ def printRequests(rides):
                 limit += 5
             else:
                 break
-        print("Ride ID: %s    Pickup: %s    Dropoff: %s    Price: %s    Date: %s" % (
-        ride[0], ride[1], ride[2], ride[3], ride[4]))
+        print("Ride ID: %s    Provider: %s    Pickup: %s    Dropoff: %s    Price: %s    Date: %s" % (ride[0], ride[1], ride[2], ride[3], ride[4], ride[5]))
         index += 1
     print("\n")
+
 
 # Find out if user wishes to login or register
 def login(c, conn):
@@ -140,6 +162,7 @@ def login(c, conn):
             print("Invalid response.")
             answer = input("Do you wish to login or register (L/R)? ")
     return email
+
 
 # Displays all the messages that are unseen for that user
 def displayMessages(c, conn, email):
