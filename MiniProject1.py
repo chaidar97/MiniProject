@@ -37,11 +37,14 @@ def main():
 
 # Use this function to query the database, just give it a query and the input for the query
 def runSQL(c, conn, query, input):
-    # Query the database on login info
-    c.execute(query, input)
-    info = c.fetchall()
-    conn.commit()
-    return info
+    try:
+        # Query the database on login info
+        c.execute(query, input)
+        info = c.fetchall()
+        conn.commit()
+        return info
+    except:
+        print("This cannot be done, please try again.")
 
 
 # Shows all of the users ride requests
@@ -77,9 +80,8 @@ def searchLocations(c, conn, loginEmail):
         query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate " \
                 "FROM requests WHERE requests.pickup = ?;"
         info = runSQL(c, conn, query, (location.lower(),))
-        print("MADE IT2")
-
         if(len(info) == 0):
+            valid = False
             print("No results found.")
         # Print out queried rides
         printRequests(info)
@@ -89,6 +91,7 @@ def searchLocations(c, conn, loginEmail):
                 "INNER JOIN locations ON (requests.pickup = locations.lcode) WHERE lower(locations.city) = ?;"
         info = runSQL(c, conn, query, (location.lower(),))
         if(len(info) == 0):
+            valid = False
             print("No results found.")
         # Print out queried rides
         printRequests(info)
