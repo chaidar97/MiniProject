@@ -37,6 +37,7 @@ def main():
 
 # Use this function to query the database, just give it a query and the input for the query
 def runSQL(c, conn, query, input):
+    info = []
     try:
         # Query the database on login info
         c.execute(query, input)
@@ -45,6 +46,7 @@ def runSQL(c, conn, query, input):
         return info
     except:
         print("This cannot be done, please try again.")
+        return info
 
 
 # Shows all of the users ride requests
