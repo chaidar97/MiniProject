@@ -19,7 +19,8 @@ def main():
     while True:
         answer = input("What would you like to do? Type 'O' for options: ")
         if(answer.lower() == "o"):
-            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride.")
+            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
+                  "\nEnter 'Post' to post a new ride.")
         elif(answer.lower() == "exit"):
             print("Goodbye.")
             break
@@ -31,6 +32,8 @@ def main():
             offerRide(c, conn, loginEmail)
         elif (answer.lower() == "search"):
             searchRides(c, conn, loginEmail)
+        elif (answer.lower() == "post"):
+            postRide(c, conn, loginEmail)
 
     conn.close()
 
@@ -40,13 +43,46 @@ def runSQL(c, conn, query, input):
     info = []
     try:
         # Query the database on login info
-        c.execute(query, input)
+        if(input == None):
+            c.execute(query)
+        else:
+            c.execute(query, input)
         info = c.fetchall()
         conn.commit()
         return info
     except:
         print("This cannot be done, please try again.")
         return info
+
+
+# Posts a new ride
+def postRide(c, conn, loginEmail):
+    date = getDate()
+    locationQuery = ("SELECT distinct locations.lcode FROM locations;")
+    locations = runSQL(c, conn, locationQuery, None)
+    pickup = input("Enter a pickup location code: ")
+    dropoff = input("Enter a dropoff location code: ")
+
+    validPickup = False
+    validDropoff = False
+    for location in locations:
+        if((pickup,)== location):
+            validPickup = True
+        if ((dropoff,) == location):
+            validDropoff = True
+    if(validPickup and validDropoff):
+        price = getPrice()
+        rQuery = ("SELECT MAX(requests.rid) FROM requests;")
+        maxRNO = runSQL(c, conn, rQuery, None)
+        rideNum = (str(maxRNO[0][0] + 1))
+        insertQuery = ("INSERT INTO requests VALUES(?,?,?,?,?,?);")
+        values = (rideNum, loginEmail, date, pickup, dropoff, price)
+        runSQL(c, conn, insertQuery, values)
+        print("Your request has been posted!")
+    else:
+        print("One of your location codes does not exist.")
+        return
+
 
 
 # Shows all of the users ride requests
@@ -198,20 +234,38 @@ def displayMessages(c, conn, email):
         runSQL(c, conn, query, values)
 
 
-# Offer a ride
-def offerRide(c, conn, loginEmail):
-
+# Retrieves date input from user
+def getDate():
     # Get day month and year from user
     while True:
         date = input("Enter ride date (MM-DD-YYYY), or 'stop' to exit: ")
         if(date == "stop"):
             return
         try:
-            year, month, day = map(int, date.split('-'))
+            month, day, year = map(int, date.split('-'))
+            date = datetime.date(year, month, day)
             break
         except:
             print("Please enter a valid date")
+    return date
 
+
+# Retrieves the price input from user
+def getPrice():
+    # Get the price per seat
+    while True:
+        priceInput = input("Enter the price per seat: ")
+        try:
+            price = int(priceInput)
+            break
+        except:
+            print("Please enter a valid price per seat")
+    return price
+
+# Offer a ride
+def offerRide(c, conn, loginEmail):
+    # Retrieve the date input
+    date = getDate()
     # Get the number of seats offered
     while True:
         seatInput = input("Enter the number of seats offered, or 'stop' to exit: ")
@@ -222,21 +276,11 @@ def offerRide(c, conn, loginEmail):
             break
         except:
             print("Please enter a valid number of seats")
-
-    # Get the price per seat
-    while True:
-        priceInput = input("Enter the price per seat, or 'stop' to exit: ")
-        if(seatInput == "stop"):
-            return
-        try:
-            seats = float(seatInput)
-            break
-        except:
-            print("Please enter a valid price per seat")
-
+    # Retrieve the price input
+    priceInput = getPrice()
     # Get the luggage description
     while True:
-        lugDesc = input("Enter a luggage description (Max Length: " + LUGGAGE_MAX_LEN + "): ")
+        lugDesc = input("Enter a luggage description (Max Length: " + str(LUGGAGE_MAX_LEN) + "): ")
         if(len(lugDesc) > LUGGAGE_MAX_LEN):
             print("Please enter a valid luggage description")
         else:
