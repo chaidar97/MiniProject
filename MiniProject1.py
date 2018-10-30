@@ -34,6 +34,9 @@ def main():
             searchRides(c, conn, loginEmail)
         elif (answer.lower() == "post"):
             postRide(c, conn, loginEmail)
+        elif (answer.lower() == "bookings"):
+            book(c, conn, loginEmail)           
+
 
     conn.close()
 
@@ -83,7 +86,53 @@ def postRide(c, conn, loginEmail):
         print("One of your location codes does not exist.")
         return
 
-
+def book(c, conn, loginEmail):
+    
+    query = "SELECT *" \
+            " FROM bookings b INNER JOIN rides r ON b.rno=r.rno WHERE b.email=? ;"
+    booking = runSQL(c, conn, query,(loginEmail,))
+    if(len(booking) == 0):
+        print("You have no bookings")
+    else:
+        print("Here are your bookings:\n")
+        print(booking)
+    
+    
+    
+         
+    query = "SELECT *" \
+                " FROM bookings WHERE bookings.email=?;"
+    booking1 = runSQL(c, conn, query,(loginEmail,))       
+    while True:
+        answer = input("If you wish to cancel a booking, enter the booking ID. If you wish to go back, enter anything else: ")
+        if(answer.isdigit()):
+                # Looks through bookings to see if the value entered matches a booking id
+            for books in booking1:
+                if(int(answer) == int(books[0])):
+                    query = "DELETE FROM bookings WHERE bookings.bno = ?;"
+                    runSQL(c,conn,query,(answer,))
+                    print("Booking #%s Canceled.\n"%answer)
+        else:
+            break    
+        
+        decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
+        if(decision.lower=="no"):
+            break
+        
+        else:
+            query="SELECT email FROM members "\
+                  "WHERE members.email= ?;"
+            valid=runSQL(c,conn,query,(decision,))
+            if(valid==0):
+                print("Invalid email")
+                
+            else:
+                query="SELECT r.rno,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
+                  "WHERE r.driver= ?;"
+                available=runSQL(c,conn,query,(decision,))
+                print(available)
+                
+       #add a booking(left)
 
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
