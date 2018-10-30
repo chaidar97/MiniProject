@@ -88,7 +88,7 @@ def postRide(c, conn, loginEmail):
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
     query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate" \
-            " FROM requests, members WHERE members.email = ? AND requests.email = members.email "
+            " FROM requests, members WHERE lower(members.email) = ? AND requests.email = members.email "
     rides = runSQL(c, conn, query, (loginEmail,))
     if(len(rides) == 0):
         print("You have no ride requests")
@@ -116,7 +116,7 @@ def searchLocations(c, conn, loginEmail):
     if(location.lower() == "l"):
         location = input("Please enter the location code: ")
         query = "SELECT requests.rid, requests.email, requests.pickup, requests.dropoff, requests.amount, requests.rdate " \
-                "FROM requests WHERE requests.pickup = ?;"
+                "FROM requests WHERE lower(requests.pickup) = ?;"
         info = runSQL(c, conn, query, (location.lower(),))
         if(len(info) == 0):
             valid = False
@@ -179,9 +179,9 @@ def login(c, conn):
             # Gather user input for email and password
             email = input("Email: ")
             pswd = getpass.getpass('Password: ')
-            loginQuery = 'SELECT Members.name from members WHERE members.email = ? AND members.pwd = ?;'
+            loginQuery = 'SELECT Members.name from members WHERE lower(members.email) = ? AND members.pwd = ?;'
             # Query the database on login info
-            loginInfo = (email, pswd)
+            loginInfo = (email.lower(), pswd)
             info = runSQL(c, conn, loginQuery, loginInfo)
             # If we get nothing returned, make user re-enter
             if(len(info) == 0):
@@ -212,12 +212,12 @@ def login(c, conn):
         else:
             print("Invalid response.")
             answer = input("Do you wish to login or register (L/R)? ")
-    return email
+    return email.lower()
 
 
 # Displays all the messages that are unseen for that user
 def displayMessages(c, conn, email):
-    query = 'SELECT inbox.sender, inbox.content, inbox.msgTimestamp FROM inbox, members WHERE members.email = ? AND inbox.email = members.email AND inbox.seen = ?'
+    query = 'SELECT inbox.sender, inbox.content, inbox.msgTimestamp FROM inbox, members WHERE lower(members.email) = ? AND inbox.email = members.email AND inbox.seen = ?'
     values = (email, "n")
     # Retrieve unseen messages
     messages = runSQL(c, conn, query, values)
@@ -230,7 +230,7 @@ def displayMessages(c, conn, email):
             print(message)
         values = ("y", email)
         # Update DB to set messages as seen
-        query = "UPDATE inbox SET seen = ? WHERE email = ?;"
+        query = "UPDATE inbox SET seen = ? WHERE lower(email) = ?;"
         runSQL(c, conn, query, values)
 
 
