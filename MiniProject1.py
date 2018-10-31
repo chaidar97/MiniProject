@@ -5,7 +5,7 @@ import time
 
 # Looks like we have to do a design doc and a readme also. We can do it at the end.
 
-LUGGAGE_MAX_LEN = 10 
+LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
@@ -35,7 +35,9 @@ def main():
         elif (answer.lower() == "post"):
             postRide(c, conn, loginEmail)
         elif (answer.lower() == "bookings"):
-            book(c, conn, loginEmail)           
+            book(c, conn, loginEmail)
+        #elif (answer.lower() == "dev"):
+        #    getLocation(c, conn, loginEmail)
 
 
     conn.close()
@@ -53,8 +55,9 @@ def runSQL(c, conn, query, input):
         info = c.fetchall()
         conn.commit()
         return info
-    except:
+    except Exception as e:
         print("This cannot be done, please try again.")
+        print(str(e))
         return info
 
 
@@ -87,7 +90,7 @@ def postRide(c, conn, loginEmail):
         return
 
 def book(c, conn, loginEmail):
-    
+
     query = "SELECT *" \
             " FROM bookings b INNER JOIN rides r ON b.rno=r.rno WHERE b.email=? ;"
     booking = runSQL(c, conn, query,(loginEmail,))
@@ -96,13 +99,13 @@ def book(c, conn, loginEmail):
     else:
         print("Here are your bookings:\n")
         print(booking)
-    
-    
-    
-         
+
+
+
+
     query = "SELECT *" \
                 " FROM bookings WHERE bookings.email=?;"
-    booking1 = runSQL(c, conn, query,(loginEmail,))       
+    booking1 = runSQL(c, conn, query,(loginEmail,))
     while True:
         answer = input("If you wish to cancel a booking, enter the booking ID. If you wish to go back, enter anything else: ")
         if(answer.isdigit()):
@@ -113,25 +116,25 @@ def book(c, conn, loginEmail):
                     runSQL(c,conn,query,(answer,))
                     print("Booking #%s Canceled.\n"%answer)
         else:
-            break    
-        
+            break
+
         decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
         if(decision.lower=="no"):
             break
-        
+
         else:
             query="SELECT email FROM members "\
                   "WHERE members.email= ?;"
             valid=runSQL(c,conn,query,(decision,))
             if(valid==0):
                 print("Invalid email")
-                
+
             else:
                 query="SELECT r.rno,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
                   "WHERE r.driver= ?;"
                 available=runSQL(c,conn,query,(decision,))
                 print(available)
-                
+
        #add a booking(left)
 
 # Shows all of the users ride requests
@@ -310,6 +313,64 @@ def getPrice():
         except:
             print("Please enter a valid price per seat")
     return price
+
+
+# Get a location off of user keywords
+def getLocation(c, conn, loginEmail):
+    while True:
+
+        # Get keyword or location code from user
+        location = input("Please enter a location keyword or code: ")
+        query = "SELECT location.lcode FROM locations location WHERE location.lcode = ?;"
+        info = runSQL(c, conn, query, (location,))
+
+        # Check if its a valid code
+        if(len(info) == 0):
+
+            # The code is invalid, search for it as a keyword
+            query = "SELECT * FROM locations WHERE city LIKE ? OR prov LIKE ? OR address LIKE ?;"
+            location = "%" + location + "%"
+            info = runSQL(c, conn, query, (location, location, location,))
+
+            # Keyword is invalid if this is false. Try searching again
+            if(len(info) == 0):
+                print("No results found.")
+            else:
+
+                # Display results from the query, only showing 5 at a time
+                start = 0
+                end = 5
+                while True:
+
+                    # Print Locations from index start to end
+                    for i in range (start, end):
+                        if(i >= len(info)):
+                            print("Reached end of locations")
+                            break
+                        print(info[i])
+
+                    # Ask for location code or y to see more
+                    location = input("Enter the location code or enter 'y' to see more: ")
+                    if(location == "y"):
+
+                        # Increment the data displayed
+                        start += 5
+                        end += 5
+                    else:
+                        # Check if the provided lcode is valid again, if it is we return the information
+                        query = "SELECT location.lcode FROM locations location WHERE location.lcode = ?;"
+                        info = runSQL(c, conn, query, (location,))
+                        if(len(info) == 0):
+                            print("Please enter a correct location code.")
+                        else:
+                            return info[0][0]
+        else:
+
+            # If the code is valid return the code
+            return info[0][0]
+
+
+
 
 # Offer a ride
 def offerRide(c, conn, loginEmail):
