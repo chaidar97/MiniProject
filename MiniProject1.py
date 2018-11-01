@@ -225,9 +225,26 @@ def book(c, conn, loginEmail):
                         
                         
            #left= comments
+        
+def printMatchRides(ride):
+    index = 0
+    limit = 5
+    # See up to 5 rides at a time
+    for book in ride:
+        # Checks to see if the user wants to see 5 more rides
+        if (index == limit):
+            response = input("\nIf you wish to see 5 more rides, enter 'y', otherwise, enter anything else: \n")
+            if (response.lower() == 'y'):
+                limit += 5
+            else:
+                break
+            
+        print("RIDE NO: %s Seats: %s Offered: %s Seats Available: %s  Price: %s Ride date: %s Luggage Desc: %s Start Destination: %s Driver: %s CNO: %s"%(ride[index][0], ride[index][1], ride[index][2], ride[index][3], ride[index][4], ride[index][5],ride[index][6],ride[index][7],ride[index][8],ride[index][9]))
+        index += 1
+    print("\n")
                         
                         
-                        
+                      
 
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
