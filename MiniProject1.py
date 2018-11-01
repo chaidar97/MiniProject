@@ -2,6 +2,8 @@ import sqlite3
 import getpass
 import datetime
 import time
+import os
+import sys
 
 # Looks like we have to do a design doc and a readme also. We can do it at the end.
 
@@ -20,9 +22,14 @@ def main():
         answer = input("What would you like to do? Type 'O' for options: ")
         if(answer.lower() == "o"):
             print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
-                  "\nEnter 'Post' to post a new ride.")
+                  "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
         elif(answer.lower() == "exit"):
             print("Goodbye.")
+            break
+        elif (answer.lower() == "logout"):
+            print("Goodbye.")
+            # Restarting the program, safer than calling main again(?)
+            os.execl(sys.executable, sys.executable, *sys.argv)
             break
         elif(answer.lower() == "smr"):
             searchRideRequests(c, conn, loginEmail)
@@ -244,11 +251,11 @@ def login(c, conn):
                 break
         # If user wants to register
         elif(answer.lower() == 'r'):
-            userQuery = 'SELECT Members.name from members WHERE members.email = ?;'
+            userQuery = 'SELECT Members.name from members WHERE lower(members.email) = ?;'
             # Get registration info
             email = input("Registration email: ")
             # Check if the email already exists
-            result = runSQL(c, conn, userQuery, (email,))
+            result = runSQL(c, conn, userQuery, (email.lower(),))
             if(len(result) != 0):
                 print("This username already exists, sorry.")
             # Insert new user into the database
