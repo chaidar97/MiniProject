@@ -21,7 +21,7 @@ def main():
     while True:
         answer = input("What would you like to do? Type 'O' for options: ")
         if(answer.lower() == "o"):
-            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'PCode' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
+            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'Location' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
                   "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
         elif(answer.lower() == "exit"):
             print("Goodbye.")
@@ -33,7 +33,7 @@ def main():
             break
         elif(answer.lower() == "smr"):
             searchRideRequests(c, conn, loginEmail)
-        elif (answer.lower() == "pcode"):
+        elif (answer.lower() == "location"):
             searchLocations(c, conn, loginEmail)
         elif (answer.lower() == "offer"):
             offerRide(c, conn, loginEmail)
