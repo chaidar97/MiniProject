@@ -120,6 +120,13 @@ def book(c, conn, loginEmail):
                         query = "DELETE FROM bookings WHERE bookings.rno = ?;"
                         runSQL(c,conn,query,(answer,))
                         print("Booking #%s Canceled.\n"%answer)
+                        
+                        message = "Your booking has been cancelled "
+                        t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                        values = (booking[2], t, loginEmail, message, book[1], "n" )
+                        query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
+                        runSQL(c, conn, query, values)
+                        print("Message sent!\n")                        
                     else:
                         break
                     
@@ -151,7 +158,7 @@ def book(c, conn, loginEmail):
                             "WHERE r.rno= ?;"                        
                      
                         value=runSQL(c,conn,query,(book_rno,))
-                        print(value)
+                        
                         
                         difference=value[0][2]-int(book_seats)
                         if(difference<0):
@@ -188,17 +195,27 @@ def book(c, conn, loginEmail):
                             cost=input("enter the cost per seat- ")
                             book_id_query=("SELECT MAX(bno) FROM bookings ;")
                             maxBNO = runSQL(c, conn, book_id_query, None)
+                            print("hie")
                             book_id_new = (str(maxBNO[0][0] + 1))                             
-                            insertQuery = ("INSERT INTO requests VALUES(?,?,?,?,?,?);")
+                            insertQuery = ("INSERT INTO bookings VALUES(?,?,?,?,?,?,?);")
                             values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
-                            runSQL(c, conn, insertQuery, values)
-                              
+                            runSQL(c, conn, insertQuery, values,)
+                            
+                            message = "Your have a new booking"
+                            t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                            values = (decision, t, loginEmail, message, book_rno, "n" )
+                            query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
+                            runSQL(c, conn, query, values)
+                            print("Message sent!\n")                                                         
+                            
                             
                         else:
                             print("One of your location codes does not exist.")
                             return                            
                             
-         #left=message the member, comments
+                        
+                        
+         #left= comments
                         
                         
                         
