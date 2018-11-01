@@ -127,8 +127,7 @@ def book(c, conn, loginEmail):
                         query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
                         runSQL(c, conn, query, values)
                         print("Message sent!\n")                        
-                    else:
-                        break
+                   
                     
             
                     
