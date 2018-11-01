@@ -130,6 +130,8 @@ def book(c, conn, loginEmail):
                     else:
                         break
                     
+            
+                    
             elif(answer=='book'):
                 
                 
@@ -155,10 +157,14 @@ def book(c, conn, loginEmail):
                         book_rno=input("Enter the rno that you want to book the member in- ")
                         book_seats=input("Enter the number of seats that you want to book - ")
                         query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
-                            "WHERE r.rno= ?;"                        
+                            "WHERE r.driver=? AND r.rno= ?;"                        
                      
-                        value=runSQL(c,conn,query,(book_rno,))
+                        value=runSQL(c,conn,query,(loginEmail,book_rno,))
+                        if(value==[]):
+                            print("Sorry, You can only book members on rides where you are the driver. ")
+                            break
                         
+                    
                         
                         difference=value[0][2]-int(book_seats)
                         if(difference<0):
@@ -195,7 +201,7 @@ def book(c, conn, loginEmail):
                             cost=input("enter the cost per seat- ")
                             book_id_query=("SELECT MAX(bno) FROM bookings ;")
                             maxBNO = runSQL(c, conn, book_id_query, None)
-                            print("hie")
+                            
                             book_id_new = (str(maxBNO[0][0] + 1))                             
                             insertQuery = ("INSERT INTO bookings VALUES(?,?,?,?,?,?,?);")
                             values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
@@ -211,11 +217,14 @@ def book(c, conn, loginEmail):
                             
                         else:
                             print("One of your location codes does not exist.")
-                            return                            
-                            
+                            break  
+                
+            else:
+                break
                         
                         
-         #left= comments
+                        
+           #left= comments
                         
                         
                         
