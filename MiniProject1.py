@@ -192,7 +192,7 @@ def book(c, conn, loginEmail):
                             insertQuery = ("INSERT INTO requests VALUES(?,?,?,?,?,?);")
                             values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
                             runSQL(c, conn, insertQuery, values)
-                            print("Your request has been posted!")   
+                              
                             
                         else:
                             print("One of your location codes does not exist.")
