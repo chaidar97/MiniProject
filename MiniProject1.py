@@ -145,8 +145,9 @@ def book(c, conn, loginEmail):
                     query="SELECT email FROM members "\
                         "WHERE members.email= ?;"
                     valid=runSQL(c,conn,query,(decision,))
-                    if(valid==0):
+                    if(valid==[]):
                         print("Invalid email")
+                        break
 
                     else:
                         query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0),r.price,r.rdate,r.lugDesc,r.src, r.dst,r.driver,r.cno FROM rides r left outer join bookings b on b.rno=r.rno "\
