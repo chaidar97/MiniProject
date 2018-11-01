@@ -175,8 +175,7 @@ def book(c, conn, loginEmail):
                             
                    
                             
-                        if flag==1:
-                            break
+                  
                         
                         locationQuery = ("SELECT distinct locations.lcode FROM locations;")
                         locations = runSQL(c, conn, locationQuery, None)
