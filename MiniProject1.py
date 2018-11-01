@@ -167,13 +167,13 @@ def book(c, conn, loginEmail):
                     
                         
                         difference=value[0][2]-int(book_seats)
-                        if(difference<0):
-                            confirm=input("Seats are overbooked. Do you still want to continue?If yes, enter'yes' or, press anything")
-                            if(confirm=='yes'):
-                                continue
-                            else:
+                       if(difference<0):
+                            confirm=input("Seats are overbooked. Do you still want to continue?If yes, enter'yes' or, press anything ")
+                            if(confirm!='yes'):
                                 flag==1
                                 break
+                            
+                   
                             
                         if flag==1:
                             break
