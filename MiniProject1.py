@@ -123,7 +123,7 @@ def book(c, conn, loginEmail):
                         
                         message = "Your booking has been cancelled "
                         t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                        values = (booking[2], t, loginEmail, message, book[1], "n" )
+                        values = (books[2], t, loginEmail, message, books[1], "n" )
                         query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
                         runSQL(c, conn, query, values)
                         print("Message sent!\n")                        
