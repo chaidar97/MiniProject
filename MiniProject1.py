@@ -98,51 +98,110 @@ def postRide(c, conn, loginEmail):
 
 def book(c, conn, loginEmail):
 
-    query = "SELECT *" \
-            " FROM bookings b INNER JOIN rides r ON b.rno=r.rno WHERE b.email=? ;"
+    query = "SELECT b.bno, b.rno, b.email,b.cost,b.seats,b.pickup,b.dropoff " \
+            " FROM bookings b,rides r WHERE r.driver=? AND b.rno=r.rno ;"    
     booking = runSQL(c, conn, query,(loginEmail,))
     if(len(booking) == 0):
         print("You have no bookings")
     else:
         print("Here are your bookings:\n")
-        print(booking)
+        for book in booking:
+            print("Booking ID: %s    Ride ID: %s    MEMBER: %s    COST: %s    SEATS: %s    PICKUP: %s  DROPOFF: %s" % (book[0], book[1], book[2], book[3], book[4], book[5], book[6]))
+            
+        
 
+        while (len(booking)!=0):
+            answer = input("If you wish to cancel a booking, enter the ride no. If you wish to book a member, enter 'book'. If you wish to go back, enter anything else: ")
+                  
+            if(answer.isdigit()):
+                # Looks through bookings to see if the value entered matches a rno
+                for books in booking:
+                    if(int(answer) == int(books[1])):
+                        query = "DELETE FROM bookings WHERE bookings.rno = ?;"
+                        runSQL(c,conn,query,(answer,))
+                        print("Booking #%s Canceled.\n"%answer)
+                    else:
+                        break
+                    
+            elif(answer=='book'):
+                
+                
+                decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
+                if(decision.lower=="no"):
+                    break
 
+                
+                else:
+                    flag=0
+                    query="SELECT email FROM members "\
+                        "WHERE members.email= ?;"
+                    valid=runSQL(c,conn,query,(decision,))
+                    if(valid==0):
+                        print("Invalid email")
 
-
-    query = "SELECT *" \
-                " FROM bookings WHERE bookings.email=?;"
-    booking1 = runSQL(c, conn, query,(loginEmail,))
-    while True:
-        answer = input("If you wish to cancel a booking, enter the booking ID. If you wish to go back, enter anything else: ")
-        if(answer.isdigit()):
-                # Looks through bookings to see if the value entered matches a booking id
-            for books in booking1:
-                if(int(answer) == int(books[0])):
-                    query = "DELETE FROM bookings WHERE bookings.bno = ?;"
-                    runSQL(c,conn,query,(answer,))
-                    print("Booking #%s Canceled.\n"%answer)
-        else:
-            break
-
-        decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
-        if(decision.lower=="no"):
-            break
-
-        else:
-            query="SELECT email FROM members "\
-                  "WHERE members.email= ?;"
-            valid=runSQL(c,conn,query,(decision,))
-            if(valid==0):
-                print("Invalid email")
-
-            else:
-                query="SELECT r.rno,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
-                  "WHERE r.driver= ?;"
-                available=runSQL(c,conn,query,(decision,))
-                print(available)
-
-       #add a booking(left)
+                    else:
+                        query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0),r.price,r.rdate,r.lugDesc,r.src, r.dst,r.driver,r.cno FROM rides r left outer join bookings b on b.rno=r.rno "\
+                            "WHERE r.driver= ?;"
+                        available=runSQL(c,conn,query,(loginEmail,))
+                        printMatchRides(available)
+                        
+                        book_rno=input("Enter the rno that you want to book the member in- ")
+                        book_seats=input("Enter the number of seats that you want to book - ")
+                        query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
+                            "WHERE r.rno= ?;"                        
+                     
+                        value=runSQL(c,conn,query,(book_rno,))
+                        print(value)
+                        
+                        difference=value[0][2]-int(book_seats)
+                        if(difference<0):
+                            confirm=input("Seats are overbooked. Do you still want to continue?If yes, enter'yes' or, press anything")
+                            if(confirm=='yes'):
+                                continue
+                            else:
+                                flag==1
+                                break
+                            
+                        if flag==1:
+                            break
+                        
+                        locationQuery = ("SELECT distinct locations.lcode FROM locations;")
+                        locations = runSQL(c, conn, locationQuery, None)
+                        pickup = input("Enter a pickup location code: ")
+                        dropoff = input("Enter a dropoff location code: ")
+                    
+                        validPickup = False
+                        validDropoff = False
+                        for location in locations:
+                            if((pickup,)== location):
+                                validPickup = True
+                            if ((dropoff,) == location):
+                                validDropoff = True
+                                
+                        
+                        
+                                               
+                        
+                        
+                        if(validPickup and validDropoff):
+                            
+                            cost=input("enter the cost per seat- ")
+                            book_id_query=("SELECT MAX(bno) FROM bookings ;")
+                            maxBNO = runSQL(c, conn, book_id_query, None)
+                            book_id_new = (str(maxBNO[0][0] + 1))                             
+                            insertQuery = ("INSERT INTO requests VALUES(?,?,?,?,?,?);")
+                            values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
+                            runSQL(c, conn, insertQuery, values)
+                            print("Your request has been posted!")   
+                            
+                        else:
+                            print("One of your location codes does not exist.")
+                            return                            
+                            
+         #left=message the member, comments
+                        
+                        
+                        
 
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
