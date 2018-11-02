@@ -572,6 +572,53 @@ def offerRide(c, conn, loginEmail):
 
 # Search for a ride
 def searchRides(c, conn, loginEmail):
-    pass
+
+    # Ask for keywords
+    out = input("Enter keywords to search for (Max 3, Separate by Space): ")
+    out = out.split(" ")
+
+    # Query for rides with that information
+    query = "SELECT * FROM rides"
+    info = runSQL(c, conn, query, None)
+
+    # Begin loop to choose
+    min = 0
+    max = 5
+    while True:
+        for i in range(min, max):
+            if(i > len(info)):
+                print("End of Rides")
+                break
+            ride = info[i]
+            carText = ""
+
+            # If there is a cno, we print the cars data
+            if(ride[8] != None):
+                carQuery = "SELECT make, model, year, seats FROM cars WHERE cno = ?;"
+                carInfo = runSQL(c, conn, carQuery, (str(ride[8]),))
+                if len(carInfo) == 0:
+                    carText = "CNO " + str(ride[8]) + " is an invalid cno"
+                else:
+                    carInfo = carInfo[0]
+                    carText = "Car Info: [Make: %s, Model: %s, Year: %s, Seats: %s]" % (str(carInfo[0]), str(carInfo[1]), str(carInfo[2]), str(carInfo[3]))
+
+            # Print all information aobut the ride
+            print("RideNo: %s, Price: %s, Date: %s, Seats: %s, Luggage:'%s', Start: %s, End: %s, Driver: %s" % (str(ride[0]), str(ride[1]), str(ride[2]), str(ride[3]), str(ride[4]), str(ride[5]), str(ride[6]), str(ride[7])) + ", " + carText)
+
+            # Ask the user if they want to quit, see more, or they have selected a rno
+            inf = input("Enter a ride number to message, or enter 'next' to continue to more rides, or 'exit' to quit: ")
+            if(inf == "quit"):
+                break
+            elif(inf == "next"):
+                min += 5
+                max += 5
+            else:
+                validQuery = "SELECT * FROM rides WHERE rno = ?;"
+                valid = runSQL(c, conn, validQuery, (inf,))
+                if(len(valid) == 0):
+                    print("Invalid ride number provided.")
+                else:
+                    pass # TODO: send message to ride owner
+
 
 main()
