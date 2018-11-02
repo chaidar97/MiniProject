@@ -186,25 +186,23 @@ def book(c, conn, loginEmail):
 
 
 
-                        locationQuery = ("SELECT distinct locations.lcode FROM locations;")
-                        locations = runSQL(c, conn, locationQuery, None)
                         pickup = input("Enter a pickup location code: ")
-                        dropoff = input("Enter a dropoff location code: ")
-
-                        validPickup = False
-                        validDropoff = False
-                        for location in locations:
-                            if((pickup,)== location):
-                                validPickup = True
-                            if ((dropoff,) == location):
-                                validDropoff = True
-
-
+                        dropoff = input("Enter a dropoff location code: ")   
+                        locationQuery = ("SELECT locations.lcode FROM locations WHERE lower(locations.lcode)=?;")
+                        locations1 = runSQL(c, conn, locationQuery, (pickup.lower(),))
+                        
+                        
+                        
+                        locationQuery = ("SELECT locations.lcode FROM locations WHERE lower(locations.lcode)=?;")
+                        locations2 = runSQL(c, conn, locationQuery, (dropoff.lower(),))
+                       
 
 
 
 
-                        if(validPickup and validDropoff):
+
+
+                        if(locations1!=[] and locations2!=[]):
 
                             cost=input("enter the cost per seat- ")
                             book_id_query=("SELECT MAX(bno) FROM bookings ;")
@@ -212,7 +210,7 @@ def book(c, conn, loginEmail):
 
                             book_id_new = (str(maxBNO[0][0] + 1))
                             insertQuery = ("INSERT INTO bookings VALUES(?,?,?,?,?,?,?);")
-                            values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
+                            values = (book_id_new, decision,book_rno,cost,book_seats,pickup.lower(), dropoff.lower())
                             runSQL(c, conn, insertQuery, values,)
 
                             message = "Your have a new booking"
@@ -595,12 +593,9 @@ def searchRides(c, conn, loginEmail):
         # CHange and and fix stuff (AND (X OR X OR X))
         queryRide += "((ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.rno = r.rno AND e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?)))"
         if(i != (len(out) - 1)):
-            queryRide += " AND "
+            queryRide += " OR "
         for j in range(0, 12):
-            if(j % 4 == 0):
-                queryData.append(out[i])
-            else:
-                queryData.append("%" + out[i] + "%")
+            queryData.append("%" + out[i] + "%")
 
     queryRide += ");"
     info = runSQL(c, conn, queryRide, queryData)
