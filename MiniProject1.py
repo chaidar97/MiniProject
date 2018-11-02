@@ -20,36 +20,37 @@ def main():
 
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
-    loginEmail = login(c, conn)
-    displayMessages(c,conn,loginEmail)
-    # Main thread
+
     while True:
-        answer = input("What would you like to do? Type 'O' for options: ")
-        if(answer.lower() == "o"):
-            print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'Location' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
-                  "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
-        elif(answer.lower() == "exit"):
-            print("Goodbye.")
-            break
-        elif (answer.lower() == "logout"):
-            print("Goodbye.")
-            # Restarting the program, safer than calling main again(?)
-            os.execl(sys.executable, sys.executable, *sys.argv)
-            break
-        elif(answer.lower() == "smr"):
-            searchRideRequests(c, conn, loginEmail)
-        elif (answer.lower() == "location"):
-            searchLocations(c, conn, loginEmail)
-        elif (answer.lower() == "offer"):
-            offerRide(c, conn, loginEmail)
-        elif (answer.lower() == "search"):
-            searchRides(c, conn, loginEmail)
-        elif (answer.lower() == "post"):
-            postRide(c, conn, loginEmail)
-        elif (answer.lower() == "bookings"):
-            book(c, conn, loginEmail)
-        #elif (answer.lower() == "dev"):
-        #    getLocation(c, conn, loginEmail)
+        loginEmail = login(c, conn)
+        displayMessages(c,conn,loginEmail)
+        # Main thread
+        while True:
+            answer = input("What would you like to do? Type 'O' for options: ")
+            if(answer.lower() == "o"):
+                print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'Location' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
+                      "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
+            elif(answer.lower() == "exit"):
+                print("Goodbye.")
+                break
+            elif (answer.lower() == "logout"):
+                print("Goodbye.")
+                # Restarting the program, safer than calling main again(?)
+                break
+            elif(answer.lower() == "smr"):
+                searchRideRequests(c, conn, loginEmail)
+            elif (answer.lower() == "location"):
+                searchLocations(c, conn, loginEmail)
+            elif (answer.lower() == "offer"):
+                offerRide(c, conn, loginEmail)
+            elif (answer.lower() == "search"):
+                searchRides(c, conn, loginEmail)
+            elif (answer.lower() == "post"):
+                postRide(c, conn, loginEmail)
+            elif (answer.lower() == "bookings"):
+                book(c, conn, loginEmail)
+            #elif (answer.lower() == "dev"):
+            #    getLocation(c, conn, loginEmail)
 
 
     conn.close()
@@ -104,7 +105,7 @@ def postRide(c, conn, loginEmail):
 def book(c, conn, loginEmail):
 
     query = "SELECT b.bno, b.rno, b.email,b.cost,b.seats,b.pickup,b.dropoff " \
-            " FROM bookings b,rides r WHERE r.driver=? AND b.rno=r.rno ;"    
+            " FROM bookings b,rides r WHERE r.driver=? AND b.rno=r.rno ;"
     booking = runSQL(c, conn, query,(loginEmail,))
     if(len(booking) == 0):
         print("You have no bookings")
@@ -112,12 +113,12 @@ def book(c, conn, loginEmail):
         print("Here are your bookings:\n")
         for book in booking:
             print("Booking ID: %s    Ride ID: %s    MEMBER: %s    COST: %s    SEATS: %s    PICKUP: %s  DROPOFF: %s" % (book[0], book[1], book[2], book[3], book[4], book[5], book[6]))
-            
-        
+
+
 
         while (len(booking)!=0):
             answer = input("If you wish to cancel a booking, enter the ride no. If you wish to book a member, enter 'book'. If you wish to go back, enter anything else: ")
-                  
+
             if(answer.isdigit()):
                 # Looks through bookings to see if the value entered matches a rno
                 for books in booking:
@@ -125,25 +126,25 @@ def book(c, conn, loginEmail):
                         query = "DELETE FROM bookings WHERE bookings.rno = ?;"
                         runSQL(c,conn,query,(answer,))
                         print("Booking #%s Canceled.\n"%answer)
-                        
+
                         message = "Your booking has been cancelled "
                         t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                         values = (books[2], t, loginEmail, message, books[1], "n" )
                         query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
                         runSQL(c, conn, query, values)
-                        print("Message sent!\n")                        
-                   
-                    
-            
-                    
+                        print("Message sent!\n")
+
+
+
+
             elif(answer=='book'):
-                
+
                 #if the user wants to book other members on the rides that he offers
                 decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
                 if(decision.lower=="no"):
                     break
 
-                
+
                 else:
                     #checking if the email is vlid or not
                     flag=0
@@ -160,19 +161,19 @@ def book(c, conn, loginEmail):
                             "WHERE r.driver= ?;"
                         available=runSQL(c,conn,query,(loginEmail,))
                         printMatchRides(available)
-                        
+
                         book_rno=input("Enter the rno that you want to book the member in- ")
                         book_seats=input("Enter the number of seats that you want to book - ")
                         query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0) FROM rides r left outer join bookings b on b.rno=r.rno "\
-                            "WHERE r.driver=? AND r.rno= ?;"                        
-                     
+                            "WHERE r.driver=? AND r.rno= ?;"
+
                         value=runSQL(c,conn,query,(loginEmail,book_rno,))
                         #checking if the user has entered any ride which he doesn't offer
                         if(value==[]):
                             print("Sorry, You can only book members on rides where you are the driver. ")
                             break
-                        
-                    
+
+
                         #checking if the seats are overbooked, and t
                         difference=value[0][2]-int(book_seats)
                         if (difference < 0):
@@ -180,16 +181,16 @@ def book(c, conn, loginEmail):
                             if(confirm!='yes'):
                                 flag==1
                                 break
-                            
-                   
-                            
-                  
-                        
+
+
+
+
+
                         locationQuery = ("SELECT distinct locations.lcode FROM locations;")
                         locations = runSQL(c, conn, locationQuery, None)
                         pickup = input("Enter a pickup location code: ")
                         dropoff = input("Enter a dropoff location code: ")
-                    
+
                         validPickup = False
                         validDropoff = False
                         for location in locations:
@@ -197,42 +198,42 @@ def book(c, conn, loginEmail):
                                 validPickup = True
                             if ((dropoff,) == location):
                                 validDropoff = True
-                                
-                        
-                        
-                                               
-                        
-                        
+
+
+
+
+
+
                         if(validPickup and validDropoff):
-                            
+
                             cost=input("enter the cost per seat- ")
                             book_id_query=("SELECT MAX(bno) FROM bookings ;")
                             maxBNO = runSQL(c, conn, book_id_query, None)
-                            
-                            book_id_new = (str(maxBNO[0][0] + 1))                             
+
+                            book_id_new = (str(maxBNO[0][0] + 1))
                             insertQuery = ("INSERT INTO bookings VALUES(?,?,?,?,?,?,?);")
                             values = (book_id_new, decision,book_rno,cost,book_seats,pickup, dropoff)
                             runSQL(c, conn, insertQuery, values,)
-                            
+
                             message = "Your have a new booking"
                             t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                             values = (decision, t, loginEmail, message, book_rno, "n" )
                             query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
                             runSQL(c, conn, query, values)
-                            print("Message sent!\n")                                                         
-                            
-                            
+                            print("Message sent!\n")
+
+
                         else:
                             print("One of your location codes does not exist.")
-                            break  
-                
+                            break
+
             else:
                 break
-                        
-                        
-                        
+
+
+
            #left= comments
-        
+
 def printMatchRides(ride):
     index = 0
     limit = 5
@@ -245,13 +246,13 @@ def printMatchRides(ride):
                 limit += 5
             else:
                 break
-            
+
         print("RIDE NO: %s Seats: %s Offered: %s Seats Available: %s  Price: %s Ride date: %s Luggage Desc: %s Start Destination: %s Driver: %s CNO: %s"%(ride[index][0], ride[index][1], ride[index][2], ride[index][3], ride[index][4], ride[index][5],ride[index][6],ride[index][7],ride[index][8],ride[index][9]))
         index += 1
     print("\n")
-                        
-                        
-                      
+
+
+
 
 # Shows all of the users ride requests
 def searchRideRequests(c, conn, loginEmail):
@@ -577,7 +578,6 @@ def offerRide(c, conn, loginEmail):
     print("Created ride offer!")
     print("rno: " + str(rno) + " price:" + str(priceInput) + " date:" + str(date) + " seats:" + str(seats) + " lugDesc:" + str(lugDesc) + " src:" + str(src) + " dst:" + str(dst) + " owner:" + str(loginEmail) + " cno:" + str(cno))
 
-
 # Search for a ride
 def searchRides(c, conn, loginEmail):
 
@@ -587,12 +587,18 @@ def searchRides(c, conn, loginEmail):
 
     # Query for rides with that information
     info = []
-    set(info)
+    queryRide = "SELECT DISTINCT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno FROM rides r, enroute e, locations sr, locations ds, locations enr WHERE r.src = sr.lcode AND r.dst = ds.lcode AND e.rno = r.rno"
+
+    queryData = []
+    # Build query string
     for i in range(0, len(out)):
-        queryRide = "SELECT DISTINCT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno FROM rides r, enroute e, locations sr, locations ds, locations enr WHERE r.src = sr.lcode AND r.dst = ds.lcode AND e.rno = r.rno AND (ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?));"
-        test = "%" + out[i] + "%"
-        super = runSQL(c, conn, queryRide, (test, test, test, test, test, test, test, test, test, test, test, test))
-        info += super
+        queryRide += " AND (ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?))"
+        for j in range(0, 12):
+            queryData.append("%" + out[i] + "%")
+
+    queryRide += ";"
+
+    info = runSQL(c, conn, queryRide, queryData)
 
     if(len(info) == 0):
         print("Nothing found from search result.")
