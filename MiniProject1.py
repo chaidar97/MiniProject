@@ -11,8 +11,13 @@ LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
-    #conn = sqlite3.connect("testdb.db")
-    conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
+    try:
+        print("Added try-catch here, remove before submission. - Chady")
+        conn = sqlite3.connect(
+            "C:/Users/Thomas/Desktop/MiniProject/testdb.db")  # Windows you need a direct folder link. Please keep this here for me :)
+    except:
+        conn = sqlite3.connect("testdb.db")
+
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
     loginEmail = login(c, conn)
