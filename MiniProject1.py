@@ -11,8 +11,8 @@ LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
-    conn = sqlite3.connect("testdb.db")
-    # conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
+    #onn = sqlite3.connect("testdb.db")
+    #conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
     loginEmail = login(c, conn)
@@ -165,9 +165,9 @@ def book(c, conn, loginEmail):
                             break
                         
                     
-                        
+
                         difference=value[0][2]-int(book_seats)
-                       if(difference<0):
+                        if (difference < 0):
                             confirm=input("Seats are overbooked. Do you still want to continue?If yes, enter'yes' or, press anything ")
                             if(confirm!='yes'):
                                 flag==1
@@ -504,26 +504,55 @@ def offerRide(c, conn, loginEmail):
         else:
             break
 
-     # TODO: Get source and destination location
+    # Get the from and to locations
+    while True:
+        print ("From Location")
+        src = getLocation(c, conn, loginEmail)
 
+        print("To Location")
+        dst = getLocation(c, conn, loginEmail)
+        if(src == dst):
+            print("To and from locations cannot be the same!")
+        else:
+            break
+
+    # Optional car number
     val = input("If you wish to add a car number, enter 'y', otherwise, enter anything else: ")
     if(val == 'y'):
         while True:
-            cno = input("Enter your car number: ")
-            try:
-                cno = int(cno)
-                # TODO: Ensure that the cno is valid
+            cno = input("Enter your car number, or 'exit' to stop: ")
+            if (cno == "exit"):
                 break
-            except:
-                print("Please enter a valid car number.")
 
+            # Check if the cno is a valid car number for our name
+            query = "SELECT cno FROM cars WHERE cno = ? AND owner = ?;"
+            info = runSQL(c, conn, query, (cno, loginEmail,))
+            if(len(info) == 1):
+                cno = info[0][0]
+                break
+            else:
+                print("Please enter a valid cno that you own.")
+
+    # Get enroute locations
     val = input("If you wish to add enroute locations, enter 'y', otherwise, enter anything else: ")
     enroute = []
     if(val == 'y'):
-        pass # TODO: While the user doesnt say no, keep asking for keywords, getting the location, and adding it in an enroute array
+
+        #  Loop until the user decides they do not want to add any more enroute locations
+        while True:
+            enroute.append(getLocation(c, conn, loginEmail))
+            val = input("If you wish to add more enroute locations, enter 'y', otherwise, enter anything else: ")
+            if(val != "y"):
+                break
+
+    #query = "SELECT cno FROM cars WHERE cno = ? AND owner = ?;"
+    #info = runSQL(c, conn, query, (cno, loginEmail,))
+    #if(len(info) == 1):
+
+    # Auto add a unique rno
 
 
-# Return a location number from a provided keyword
+# Return a location number from a provided keyw
 def locFromKeyword(keyword):
     pass
 
