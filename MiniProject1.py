@@ -11,8 +11,8 @@ LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
-    conn = sqlite3.connect("testdb.db")
-    #conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
+    #conn = sqlite3.connect("testdb.db")
+    conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
     loginEmail = login(c, conn)
@@ -484,6 +484,7 @@ def getLocation(c, conn, loginEmail):
 def offerRide(c, conn, loginEmail):
     # Retrieve the date input
     date = getDate()
+
     # Get the number of seats offered
     while True:
         seatInput = input("Enter the number of seats offered, or 'stop' to exit: ")
@@ -494,15 +495,17 @@ def offerRide(c, conn, loginEmail):
             break
         except:
             print("Please enter a valid number of seats")
+
     # Retrieve the price input
     priceInput = getPrice()
+
     # Get the luggage description
     while True:
         lugDesc = input("Enter a luggage description (Max Length: " + str(LUGGAGE_MAX_LEN) + "): ")
         if(len(lugDesc) > LUGGAGE_MAX_LEN):
             print("Please enter a valid luggage description")
         else:
-            break
+            return lugDesc
 
     # Get the from and to locations
     while True:
@@ -570,6 +573,5 @@ def offerRide(c, conn, loginEmail):
 # Search for a ride
 def searchRides(c, conn, loginEmail):
     pass
-
 
 main()
