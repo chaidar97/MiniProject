@@ -133,13 +133,14 @@ def book(c, conn, loginEmail):
                     
             elif(answer=='book'):
                 
-                
+                #if the user wants to book other members on the rides that he offers
                 decision=input("do you wish to book a particular member for a ride, if yes, then enter his email if no, enter 'no' - ")
                 if(decision.lower=="no"):
                     break
 
                 
                 else:
+                    #checking if the email is vlid or not
                     flag=0
                     query="SELECT email FROM members "\
                         "WHERE members.email= ?;"
@@ -149,6 +150,7 @@ def book(c, conn, loginEmail):
                         break
 
                     else:
+                        #if the email is valid, then print the ride info with the number of seats available on the ride
                         query="SELECT r.rno,r.seats,r.seats-ifnull((b.seats),0),r.price,r.rdate,r.lugDesc,r.src, r.dst,r.driver,r.cno FROM rides r left outer join bookings b on b.rno=r.rno "\
                             "WHERE r.driver= ?;"
                         available=runSQL(c,conn,query,(loginEmail,))
@@ -160,12 +162,13 @@ def book(c, conn, loginEmail):
                             "WHERE r.driver=? AND r.rno= ?;"                        
                      
                         value=runSQL(c,conn,query,(loginEmail,book_rno,))
+                        #checking if the user has entered any ride which he doesn't offer
                         if(value==[]):
                             print("Sorry, You can only book members on rides where you are the driver. ")
                             break
                         
                     
-
+                        #checking if the seats are overbooked, and t
                         difference=value[0][2]-int(book_seats)
                         if (difference < 0):
                             confirm=input("Seats are overbooked. Do you still want to continue?If yes, enter'yes' or, press anything ")
