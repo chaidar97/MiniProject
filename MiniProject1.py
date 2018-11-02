@@ -32,7 +32,7 @@ def main():
                       "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
             elif(answer.lower() == "exit"):
                 print("Goodbye.")
-                break
+                exit(0)
             elif (answer.lower() == "logout"):
                 print("Goodbye.")
                 # Restarting the program, safer than calling main again(?)
