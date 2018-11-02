@@ -505,7 +505,7 @@ def offerRide(c, conn, loginEmail):
         if(len(lugDesc) > LUGGAGE_MAX_LEN):
             print("Please enter a valid luggage description")
         else:
-            return lugDesc
+            break
 
     # Get the from and to locations
     while True:
@@ -578,15 +578,24 @@ def searchRides(c, conn, loginEmail):
     out = out.split(" ")
 
     # Query for rides with that information
-    query = "SELECT * FROM rides"
-    info = runSQL(c, conn, query, None)
+    info = []
+    set(info)
+    for i in range(0, len(out)):
+        queryRide = "SELECT DISTINCT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno FROM rides r, enroute e, locations sr, locations ds, locations enr WHERE r.src = sr.lcode AND r.dst = ds.lcode AND e.rno = r.rno AND (ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?));"
+        test = "%" + out[i] + "%"
+        super = runSQL(c, conn, queryRide, (test, test, test, test, test, test, test, test, test, test, test, test))
+        info += super
+
+    if(len(info) == 0):
+        print("Nothing found from search result.")
+        return
 
     # Begin loop to choose
     min = 0
     max = 5
     while True:
         for i in range(min, max):
-            if(i > len(info)):
+            if(i >= len(info)):
                 print("End of Rides")
                 break
             ride = info[i]
@@ -605,20 +614,30 @@ def searchRides(c, conn, loginEmail):
             # Print all information aobut the ride
             print("RideNo: %s, Price: %s, Date: %s, Seats: %s, Luggage:'%s', Start: %s, End: %s, Driver: %s" % (str(ride[0]), str(ride[1]), str(ride[2]), str(ride[3]), str(ride[4]), str(ride[5]), str(ride[6]), str(ride[7])) + ", " + carText)
 
-            # Ask the user if they want to quit, see more, or they have selected a rno
-            inf = input("Enter a ride number to message, or enter 'next' to continue to more rides, or 'exit' to quit: ")
-            if(inf == "quit"):
-                break
-            elif(inf == "next"):
-                min += 5
-                max += 5
+        # Ask the user if they want to quit, see more, or they have selected a rno
+        inf = input("Enter a ride number to message, or enter 'next' to continue to more rides, or 'exit' to quit: ")
+        if(inf == "exit"):
+            return
+        elif(inf == "next"):
+            # Increase print area and show more values
+            min += 5
+            max += 5
+        else:
+            # Check to make sure the rno is valid that they provided
+            validQuery = "SELECT * FROM rides WHERE rno = ?;"
+            valid = runSQL(c, conn, validQuery, (inf,))
+            if(len(valid) == 0):
+                print("Invalid ride number provided.")
             else:
-                validQuery = "SELECT * FROM rides WHERE rno = ?;"
-                valid = runSQL(c, conn, validQuery, (inf,))
-                if(len(valid) == 0):
-                    print("Invalid ride number provided.")
-                else:
-                    pass # TODO: send message to ride owner
+
+                # Gather information for new message
+                message = input("Enter the message you wish to send: ")
+                t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                values = (str(ride[7]), t, loginEmail, message, str(ride[0]), "n" )
+                query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
+                runSQL(c, conn, query, values)
+                print("Message sent!\n")
+                return
 
 
 main()
