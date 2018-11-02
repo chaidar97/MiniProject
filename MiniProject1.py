@@ -11,7 +11,7 @@ LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
-    #onn = sqlite3.connect("testdb.db")
+    conn = sqlite3.connect("testdb.db")
     #conn = sqlite3.connect("C:/Users/Thomas/Desktop/MiniProject/testdb.db") # Windows you need a direct folder link. Please keep this here for me :)
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
@@ -518,10 +518,12 @@ def offerRide(c, conn, loginEmail):
 
     # Optional car number
     val = input("If you wish to add a car number, enter 'y', otherwise, enter anything else: ")
+    cno = None
     if(val == 'y'):
         while True:
             cno = input("Enter your car number, or 'exit' to stop: ")
             if (cno == "exit"):
+                cno = None
                 break
 
             # Check if the cno is a valid car number for our name
@@ -545,22 +547,25 @@ def offerRide(c, conn, loginEmail):
             if(val != "y"):
                 break
 
-    #query = "SELECT cno FROM cars WHERE cno = ? AND owner = ?;"
-    #info = runSQL(c, conn, query, (cno, loginEmail,))
-    #if(len(info) == 1):
+    # Get the current max rno and increment by one.
+    query = "SELECT max(rno) FROM rides;"
+    info = runSQL(c, conn, query, ())
+    rno = info[0][0]
+    rno += 1
 
-    # Auto add a unique rno
+    # Add the ride
+    query = "INSERT INTO rides VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"
+    info = runSQL(c, conn, query, (rno, priceInput, date, seats, lugDesc, src, dst, loginEmail, cno))
 
+    # Add all enroute information to the enroute database
+    for i in range(0, len(enroute)):
+        query = "INSERT INTO enroute VALUES (?, ?)"
+        info = runSQL(c, conn, query, (rno, enroute[i]))
 
-# Return a location number from a provided keyw
-def locFromKeyword(keyword):
-    pass
+    # Print that the ride was added
+    print("Created ride offer!")
+    print("rno: " + str(rno) + " price:" + str(priceInput) + " date:" + str(date) + " seats:" + str(seats) + " lugDesc:" + str(lugDesc) + " src:" + str(src) + " dst:" + str(dst) + " owner:" + str(loginEmail) + " cno:" + str(cno))
 
-# Ask the user for a location repeatedly
-def pollForLocation():
-    pass
-    #while True:
-    #    key = input("Enter a location keyword: ")
 
 # Search for a ride
 def searchRides(c, conn, loginEmail):
