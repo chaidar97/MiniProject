@@ -587,17 +587,19 @@ def searchRides(c, conn, loginEmail):
 
     # Query for rides with that information
     info = []
-    queryRide = "SELECT DISTINCT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno FROM rides r, enroute e, locations sr, locations ds, locations enr WHERE r.src = sr.lcode AND r.dst = ds.lcode AND e.rno = r.rno"
+    queryRide = "SELECT DISTINCT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno FROM rides r, enroute e, locations sr, locations ds, locations enr WHERE r.src = sr.lcode AND r.dst = ds.lcode AND ("
 
     queryData = []
     # Build query string
     for i in range(0, len(out)):
-        queryRide += " AND (ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?))"
+        # CHange and and fix stuff (AND (X OR X OR X))
+        queryRide += "((ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.rno = r.rno AND e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?)))"
+        if(i != (len(out) - 1)):
+            queryRide += " OR "
         for j in range(0, 12):
             queryData.append("%" + out[i] + "%")
 
-    queryRide += ";"
-
+    queryRide += ");"
     info = runSQL(c, conn, queryRide, queryData)
 
     if(len(info) == 0):
