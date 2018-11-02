@@ -2,16 +2,22 @@ import sqlite3
 import getpass
 import datetime
 import time
-import os
-import sys
+import os.path
+
 
 # Looks like we have to do a design doc and a readme also. We can do it at the end.
 
 LUGGAGE_MAX_LEN = 10
 
 def main():
-    db = input("Enter the database name(ex: database.db): ")
     loginEmail = ""
+    # Ask user to input database they wish to access
+    while True:
+        db = input("Enter the database name(ex: database.db): ")
+        if(not os.path.isfile(db)):
+            print("Invalid database, please try again.")
+        else:
+            break
     conn = sqlite3.connect(db)
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = 1")
@@ -400,9 +406,7 @@ def displayMessages(c, conn, email):
 def getDate():
     # Get day month and year from user
     while True:
-        date = input("Enter ride date (MM-DD-YYYY), or 'stop' to exit: ")
-        if(date == "stop"):
-            return
+        date = input("Enter ride date (MM-DD-YYYY): ")
         try:
             month, day, year = map(int, date.split('-'))
             date = datetime.date(year, month, day)

@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="233008c9-57cf-4814-89ac-ce336cb7a844" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/MiniProject1.py" beforeDir="false" afterPath="$PROJECT_DIR$/MiniProject1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testdb.db" beforeDir="false" afterPath="$PROJECT_DIR$/testdb.db" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,17 +15,17 @@
     <session id="-935493912">
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="212" />
+          <entry key="py" value="359" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="212" />
+          <entry key="Python" value="359" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="2" />
           <entry key="project.open.time.4" value="1" />
           <entry key="project.opened" value="1" />
         </counts>
@@ -36,8 +37,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MiniProject1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="18" column="22" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
+            <state relative-caret-position="240">
+              <caret line="16" column="28" selection-start-line="16" selection-start-column="28" selection-end-line="16" selection-end-column="28" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -119,7 +120,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="41" y="25" width="1330" height="807" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14208074" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -153,8 +153,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/MiniProject1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="18" column="22" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
+        <state relative-caret-position="240">
+          <caret line="16" column="28" selection-start-line="16" selection-start-column="28" selection-end-line="16" selection-end-column="28" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
