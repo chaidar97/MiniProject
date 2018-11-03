@@ -579,8 +579,13 @@ def offerRide(c, conn, loginEmail):
 def searchRides(c, conn, loginEmail):
 
     # Ask for keywords
-    out = input("Enter keywords to search for (Max 3, Separate by Space): ")
-    out = out.split(" ")
+    while True:
+        out = input("Enter keywords to search for (Max 3, Separate by Space): ")
+        out = out.split(" ")
+        if(len(out) > 3):
+            print("Too many keywords!")
+        else:
+            break
 
     # Query for rides with that information
     info = []
