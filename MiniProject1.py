@@ -4,13 +4,11 @@ import datetime
 import time
 import os.path
 
-
-# Looks like we have to do a design doc and a readme also. We can do it at the end.
-
 LUGGAGE_MAX_LEN = 10
 
 def main():
     loginEmail = ""
+
     # Ask user to input database they wish to access
     while True:
         db = input("Enter the database name(ex: database.db): ")
@@ -25,6 +23,7 @@ def main():
     while True:
         loginEmail = login(c, conn)
         displayMessages(c,conn,loginEmail)
+
         # Main thread
         while True:
             answer = input("What would you like to do? Type 'O' for options: ")
@@ -36,7 +35,6 @@ def main():
                 exit(0)
             elif (answer.lower() == "logout"):
                 print("Goodbye.")
-                # Restarting the program, safer than calling main again(?)
                 break
             elif(answer.lower() == "smr"):
                 searchRideRequests(c, conn, loginEmail)
@@ -47,11 +45,9 @@ def main():
             elif (answer.lower() == "search"):
                 searchRides(c, conn, loginEmail)
             elif (answer.lower() == "post"):
-                postRide(c, conn, loginEmail)
+                postRideRequest(c, conn, loginEmail)
             elif (answer.lower() == "bookings"):
                 book(c, conn, loginEmail)
-            #elif (answer.lower() == "dev"):
-            #    getLocation(c, conn, loginEmail)
 
 
     conn.close()
@@ -70,19 +66,21 @@ def runSQL(c, conn, query, input):
         conn.commit()
         return info
     except Exception as e:
+        # If a query exception happens, print the error
         print("This cannot be done, please try again.")
         print(str(e))
         return info
 
 
 # Posts a new ride
-def postRide(c, conn, loginEmail):
+def postRideRequest(c, conn, loginEmail):
     date = getDate()
     locationQuery = ("SELECT distinct locations.lcode FROM locations;")
     locations = runSQL(c, conn, locationQuery, None)
     pickup = input("Enter a pickup location code: ")
     dropoff = input("Enter a dropoff location code: ")
 
+    # Check if the pickup and drop off locations are valid
     validPickup = False
     validDropoff = False
     for location in locations:
@@ -186,28 +184,15 @@ def book(c, conn, loginEmail):
                                 flag==1
                                 break
 
-
-
-
-
                         pickup = input("Enter a pickup location code: ")
                         dropoff = input("Enter a dropoff location code: ")   
                         locationQuery = ("SELECT locations.lcode FROM locations WHERE lower(locations.lcode)=?;")
-                        locations1 = runSQL(c, conn, locationQuery, (pickup.lower(),))
-                        
-                        
+                        locations1 = runSQL(c, conn, locationQuery, (pickup.lower(),))             
                         
                         locationQuery = ("SELECT locations.lcode FROM locations WHERE lower(locations.lcode)=?;")
                         locations2 = runSQL(c, conn, locationQuery, (dropoff.lower(),))
                        
-
-
-
-
-
-
                         if(locations1!=[] and locations2!=[]):
-
                             cost=input("enter the cost per seat- ")
                             book_id_query=("SELECT MAX(bno) FROM bookings ;")
                             maxBNO = runSQL(c, conn, book_id_query, None)
@@ -223,18 +208,11 @@ def book(c, conn, loginEmail):
                             query = "INSERT INTO inbox VALUES(?,?,?,?,?,?);"
                             runSQL(c, conn, query, values)
                             print("Message sent!\n")
-
-
                         else:
                             print("One of your location codes does not exist.")
                             break
-
             else:
                 break
-
-
-
-           #left= comments
 
 def printMatchRides(ride):
     index = 0
@@ -405,7 +383,7 @@ def displayMessages(c, conn, email):
         runSQL(c, conn, query, values)
 
 
-# Retrieves date input from user
+# Retrieves a date from user
 def getDate():
     # Get day month and year from user
     while True:
@@ -419,7 +397,7 @@ def getDate():
     return date
 
 
-# Retrieves the price input from user
+# Retrieves the price value from the user
 def getPrice():
     # Get the price per seat
     while True:
@@ -651,7 +629,7 @@ def searchRides(c, conn, loginEmail):
                 print("Invalid ride number provided.")
             else:
 
-                # Gather information for new message
+                # Gather information for new message and send to driver
                 message = input("Enter the message you wish to send: ")
                 t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 values = (str(ride[7]), t, loginEmail, message, str(ride[0]), "n" )
