@@ -75,24 +75,21 @@ def runSQL(c, conn, query, input):
 # Posts a new ride
 def postRideRequest(c, conn, loginEmail):
     date = getDate()
-    locationQuery = ("SELECT distinct locations.lcode FROM locations;")
-    locations = runSQL(c, conn, locationQuery, None)
+
+    # Get locations from user
+    locationQuery = ("SELECT lcode FROM locations WHERE lcode = ? OR lcode = ?;")
     pickup = input("Enter a pickup location code: ")
     dropoff = input("Enter a dropoff location code: ")
+    locations = runSQL(c, conn, locationQuery, (pickup, dropoff,))
 
     # Check if the pickup and drop off locations are valid
-    validPickup = False
-    validDropoff = False
-    for location in locations:
-        if((pickup,)== location):
-            validPickup = True
-        if ((dropoff,) == location):
-            validDropoff = True
-    if(validPickup and validDropoff):
+    if(len(locations) == 2):
         price = getPrice()
         if(price < 1):
             print("Invalid price.")
             return
+
+        # Get the max requestnumber and then add request
         rQuery = ("SELECT MAX(requests.rid) FROM requests;")
         maxRNO = runSQL(c, conn, rQuery, None)
         rideNum = (str(maxRNO[0][0] + 1))
