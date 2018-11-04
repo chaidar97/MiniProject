@@ -29,8 +29,8 @@ def main():
         while True:
             answer = input("What would you like to do? Type 'O' for options: ")
             if(answer.lower() == "o"):
-                print("Enter 'SMR' to see your rides\nEnter 'Exit' to quit.\nEnter 'Location' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
-                      "\nEnter 'Post' to post a new ride.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
+                print("Enter 'SMR' to see your ride requests.\nEnter 'Exit' to quit.\nEnter 'Location' to search a pickup location\nEnter 'offer' to offer a ride.\nEnter 'search' to search for a ride."
+                      "\nEnter 'Post' to post a new ride request.\nEnter 'Bookings' to book a ride.\nEnter 'Logout' to logout.")
             elif(answer.lower() == "exit"):
                 print("Goodbye.")
                 exit(0)
@@ -92,6 +92,9 @@ def postRide(c, conn, loginEmail):
             validDropoff = True
     if(validPickup and validDropoff):
         price = getPrice()
+        if(price < 1):
+            print("Invalid price.")
+            return
         rQuery = ("SELECT MAX(requests.rid) FROM requests;")
         maxRNO = runSQL(c, conn, rQuery, None)
         rideNum = (str(maxRNO[0][0] + 1))
