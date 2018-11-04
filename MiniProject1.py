@@ -80,6 +80,8 @@ def postRideRequest(c, conn, loginEmail):
     locationQuery = ("SELECT lcode FROM locations WHERE lcode = ? OR lcode = ?;")
     pickup = input("Enter a pickup location code: ")
     dropoff = input("Enter a dropoff location code: ")
+    pickup = pickup.lower()
+    dropoff = dropoff.lower()
     locations = runSQL(c, conn, locationQuery, (pickup, dropoff,))
 
     # Check if the pickup and drop off locations are valid
@@ -181,6 +183,7 @@ def book(c, conn, loginEmail):
                                 flag==1
                                 break
 
+                        # Get the locations from the user
                         pickup = input("Enter a pickup location code: ")
                         dropoff = input("Enter a dropoff location code: ")   
                         locationQuery = ("SELECT locations.lcode FROM locations WHERE lower(locations.lcode)=?;")
@@ -413,6 +416,7 @@ def getLocation(c, conn, loginEmail):
 
         # Get keyword or location code from user
         location = input("Please enter a location keyword or code: ")
+        location = location.lower()
         query = "SELECT location.lcode FROM locations location WHERE location.lcode = ?;"
         info = runSQL(c, conn, query, (location,))
 
@@ -443,6 +447,7 @@ def getLocation(c, conn, loginEmail):
 
                     # Ask for location code or y to see more
                     location = input("Enter the location code or enter 'y' to see more: ")
+                    location = location.lower()
                     if(location == "y"):
 
                         # Increment the data displayed
