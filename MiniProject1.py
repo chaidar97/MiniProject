@@ -580,9 +580,12 @@ def searchRides(c, conn, loginEmail):
         # CHange and and fix stuff (AND (X OR X OR X))
         queryRide += "((ds.lcode LIKE ? OR ds.city LIKE ? OR ds.prov LIKE ? OR ds.address LIKE ?) OR (sr.lcode LIKE ? OR sr.city LIKE ? OR sr.prov LIKE ? OR sr.address LIKE ?) OR (e.rno = r.rno AND e.lcode = enr.lcode AND (enr.lcode LIKE ? OR enr.city LIKE ? OR enr.prov LIKE ? OR enr.address LIKE ?)))"
         if(i != (len(out) - 1)):
-            queryRide += " OR "
+            queryRide += " AND "
         for j in range(0, 12):
-            queryData.append("%" + out[i] + "%")
+            if(j % 4 == 0):
+                queryData.append(out[i].lower())
+            else:
+                queryData.append("%" + out[i] + "%")
 
     queryRide += ");"
     info = runSQL(c, conn, queryRide, queryData)
